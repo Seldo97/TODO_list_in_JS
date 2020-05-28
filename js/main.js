@@ -15,6 +15,8 @@ let $editedTodo; // edytowany Todo
 let $popupInput; // tekst wpisywane w inputa w popupie
 let $addPopupBtn; // przycisk zatwierdź w popupie
 let $closeTodoBtn;  // przycisk do zamykania popupa
+let $idNumber = 0;
+let $allTasks;
 
 
 const main = () => {
@@ -34,6 +36,7 @@ const prepareDOMElements = () => {
     $popupInput = document.querySelector('.popupInput');
     $addPopupBtn = document.querySelector('.accept');
     $closeTodoBtn = document.querySelector('.cancel');
+
 };
 
 // nadajemy nasłuchiwanie
@@ -41,20 +44,31 @@ const prepareDOMEvents = () => {
     $addBtn.addEventListener('click', addNewTask);
     $ulList.addEventListener('click', checkClick);
     $closeTodoBtn.addEventListener('click', closePopup);
+    $addPopupBtn.addEventListener('click', changeTodo);
+    $todoInput.addEventListener('keyup', enterCheck);
 };
 
 // Dodaj nowe zadanie
 const addNewTask = () => {
     if($todoInput.value != '') {
+        $idNumber++;
         $newTask = document.createElement('li');
         $newTask.innerHTML = $todoInput.value;
+        $newTask.setAttribute('id', `todo-${$idNumber}`);
         $ulList.appendChild($newTask);
+
         $todoInput.value = '';
-        $alertInfo.innerHTML = '';
+        $alertInfo.style.display = 'none';
 
         createToolsArea();
     }else {
         $alertInfo.innerHTML = 'Wpisz treść zadania!';
+    }
+};
+
+const enterCheck = () => {
+    if(event.keyCode === 13) {
+        addNewTask();
     }
 };
 
@@ -87,22 +101,46 @@ const checkClick = (e) => {
         e.target.closest('li').classList.toggle('completed');
         e.target.closest('button').classList.toggle('completed');
     } else if (e.target.closest('button').className == 'edit') {
-        editTask();
+        editTask(e);
     } else if (e.target.closest('button').className == 'delete') {
-
+        deleteTask(e);
     } else {
 
     }
 
 };
 
-const editTask = () =>{
+const editTask = (e) =>{
+    const oldTodo = e.target.closest('li').id;
+    $editedTodo = document.getElementById(oldTodo);
+    $popupInput.value = $editedTodo.firstChild.textContent;
+
     $popup.style.display = 'flex';
-}
+};
+
+const changeTodo = () => {
+    if ($popupInput.value != ''){
+        $editedTodo.firstChild.textContent = $popupInput.value;
+        closePopup();
+    }else{
+        $popupInfo.innerHTML = "Wprowadź tekst!";
+    }
+};
+
+const deleteTask = (e) => {
+    const deleteTodo = e.target.closest('li');
+    deleteTodo.remove();
+    $allTasks = $ulList.getElementsByTagName('li').length;
+
+    if ($allTasks == '0') {
+        $alertInfo.style.display = 'block';
+    }
+};
 
 const closePopup =() => {
     $popup.style.display = 'none';
-}
+    $popupInfo.innerHTML = '';
+};
 
 // Funkcja czekająca na załadowanie contentu strony
 document.addEventListener('DOMContentLoaded', main);
